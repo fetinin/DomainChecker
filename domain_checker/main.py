@@ -15,9 +15,9 @@ from helpers import partition
 @memoize(ignore_values={'session'})
 async def _fetch(url: str, session: ClientSession) -> str:
     print(f"fetcing {url}")
-    # return bulk_responses[url.split('whois/')[-1]]
-    async with session.get(url) as response:
-        return await response.text()
+    return bulk_responses[url.split('whois/')[-1]]
+    # async with session.get(url) as response:
+    #     return await response.text()
 
 
 def _add_pretty_date(domain_info):
