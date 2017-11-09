@@ -1,4 +1,7 @@
-from aiotg import Bot, Chat, asyncio
+import asyncio
+from aiotg import Bot, Chat
+from main import fetch_domains_info
+from db import db, get_domain
 
 with open('token.secret', 'r') as f:
     token = f.read()
@@ -6,25 +9,37 @@ with open('token.secret', 'r') as f:
 bot = Bot(token)
 
 
-@bot.command(r"check")
+@bot.command(r"check +")
 async def check(chat: Chat, match):
-    url = "http://google.com"
-    async with bot.session.get(url) as s:
-        info = await s.text()
-        await chat.send_text(info[:15])
+    domain_name = chat.message['text'].split("check ")[-1]
+    domain = get_domain(domain_name)
+    if domain:
+        return await chat.send_text(f"{domain['domain']} will expire {domain['paid-till']}.")
+    else:
+        return await chat.send_text(f"No such domain found.")
 
 
-@bot.command(r"check")
+@bot.command(r"add +")
 async def add_domain(chat: Chat, match):
-    pass
+    domain_name = chat.message['text'].split("add ")[-1]
+    # chat.send_text(domain_name)
+    if get_domain(domain_name):
+        return await chat.send_text("Domain already registered")
+    fetched_domains = await fetch_domains_info([domain_name])
+    if fetched_domains:
+        fetched_domain = fetched_domains[-1]
+        db.insert(fetched_domain)
+        return await chat.send_text(f"Successfully added {fetched_domain['domain']}")
+    else:
+        return await chat.send_text(f"Failed to fetch {domain_name}.")
 
 
-@bot.command(r"check")
+@bot.command(r"delete +")
 async def delete_domain(chat: Chat, match):
     pass
 
 
-@bot.command(r"check")
+@bot.command(r"update +")
 async def check(chat: Chat, match):
     pass
 
