@@ -1,12 +1,20 @@
+import os
 import asyncio
 from aiotg import Bot, Chat
 from domain_info_collector import fetch_domains_info
 import db
 
-with open('token.secret', 'r') as f:
-    token = f.read()
 
-bot = Bot(token)
+def _get_token():
+    try:
+        with open('token.secret', 'r') as f:
+            token = f.read()
+    except FileNotFoundError:
+        token = os.environ.get("BOT_TOKEN", "")
+    return token
+
+
+bot = Bot(_get_token())
 
 
 @bot.command(r"/check +")
@@ -14,7 +22,8 @@ async def check(chat: Chat, match):
     domain_name = chat.message['text'].split("check ")[-1]
     domain = db.get_domain(domain_name)
     if domain:
-        return await chat.send_text(f"{domain['domain']} истечёт {domain['expiration_date']}.")
+        formatted_domain_info = "\n".join((f"{k}: {v}" for k, v in domain.items()))
+        return await chat.send_text(formatted_domain_info)
     else:
         return await chat.send_text(f"Домен {domain_name} не найден.")
 
@@ -68,7 +77,7 @@ async def add_domains(chat: Chat, match):
         return await chat.send_text(f"Не удалось собрать информацию о доменах.")
 
 
-@bot.command(r"/delete +")
+@bot.command(r"/delete_domain +")
 async def delete_domain(chat: Chat, match):
     domain_name = chat.message['text'].split("delete ")[-1]
     db.delete_by_domain_name(domain_name)
