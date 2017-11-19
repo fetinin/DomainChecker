@@ -63,3 +63,4 @@ venv.bak/
 .idea/
 *.secret
 db.json
+*.lock
