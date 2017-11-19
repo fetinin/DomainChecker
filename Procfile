@@ -1,0 +1,1 @@
+informer: python ./domain_checker/main.py

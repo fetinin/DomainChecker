@@ -1,12 +1,8 @@
 import asyncio
-import datetime
 
 from bot import bot
 from db import get_domains_expire_in, get_subscribed_users
-
-
-NOTIFICATION_INTERVAL = int(datetime.timedelta(days=14).total_seconds())
-DOMAIN_EXPIRATION_DAYS = 30
+from settings import NOTIFICATIONS_INTERVAL, DOMAIN_EXPIRATION_DAYS
 
 
 async def notify_about_expired_domains():
@@ -21,7 +17,7 @@ async def notify_about_expired_domains():
         for user in users_to_notify:
             bot.send_message(user['chat_id'], usr_msg)
 
-        await asyncio.sleep(NOTIFICATION_INTERVAL)
+        await asyncio.sleep(NOTIFICATIONS_INTERVAL)
 
 
 if __name__ == '__main__':

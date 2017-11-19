@@ -62,5 +62,5 @@ venv.bak/
 .mypy_cache/
 .idea/
 *.secret
-db.json
+domain_checker/db.json
 *.lock

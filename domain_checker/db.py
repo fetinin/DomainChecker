@@ -1,8 +1,10 @@
 import datetime
 from tinydb import TinyDB, Query
 
-domains_db = TinyDB('db.json', default_table='domains')
-users_db = TinyDB('db.json', default_table='users')
+from settings import DATABASE_FILE
+
+domains_db = TinyDB(str(DATABASE_FILE), default_table='domains')
+users_db = TinyDB(str(DATABASE_FILE), default_table='users')
 
 Domain = Query()
 User = Query()

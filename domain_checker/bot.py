@@ -3,11 +3,12 @@ import asyncio
 from aiotg import Bot, Chat
 from domain_info_collector import fetch_domains_info
 import db
+from settings import BOT_TOKEN_FILE
 
 
 def _get_token():
     try:
-        with open('token.secret', 'r') as f:
+        with BOT_TOKEN_FILE.open() as f:
             token = f.read()
     except FileNotFoundError:
         token = os.environ.get("BOT_TOKEN", "")
