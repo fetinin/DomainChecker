@@ -5,6 +5,11 @@ verify_ssl = true
 name = "pypi"
 
 
+[requires]
+
+python_version = "3.6"
+
+
 [dev-packages]
 
 
@@ -15,4 +20,5 @@ aiohttp = "*"
 "bs4" = "*"
 maya = "*"
 aiotg = "*"
-tinydb = "*"
+sqlalchemy = "*"
+"psycopg2" = "*"

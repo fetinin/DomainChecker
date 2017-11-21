@@ -13,7 +13,7 @@ async def notify_about_expired_domains():
             [f"{domain['domain']} истекает {domain['expiration_date']}"
              for domain in expiring_domains]
         )
-        usr_msg = f"Следующие домены истекают в течение {DOMAIN_EXPIRATION_DAYS} дней:\n" + expiring_domains_msg
+        usr_msg = f"Следующие домены истекают в течение {DOMAIN_EXPIRATION_DAYS} дней:\n {expiring_domains_msg}"
         for user in users_to_notify:
             bot.send_message(user['chat_id'], usr_msg)
 

@@ -18,9 +18,14 @@ def _get_token():
 bot = Bot(_get_token())
 
 
+def _extract_message(chat: Chat, command_name: str) -> str:
+    """Get rid of command from chat message."""
+    return chat.message['text'].split(command_name)[-1]
+
+
 @bot.command(r"/check +")
 async def check(chat: Chat, match):
-    domain_name = chat.message['text'].split("check ")[-1]
+    domain_name = _extract_message(chat, "/check ")
     domain = db.get_domain(domain_name)
     if domain:
         formatted_domain_info = "\n".join((f"{k}: {v}" for k, v in domain.items()))
@@ -31,7 +36,7 @@ async def check(chat: Chat, match):
 
 @bot.command(r"/add_domain +")
 async def add_domain(chat: Chat, match):
-    domain_name = chat.message['text'].split("add_domain ")[-1]
+    domain_name = _extract_message(chat, "/add_domain ")
     if db.get_domain(domain_name):
         return await chat.send_text("Домен уже добавлен.")
     fetched_domains = await fetch_domains_info([domain_name])
@@ -45,7 +50,7 @@ async def add_domain(chat: Chat, match):
 
 @bot.command(r"/update_domain +")
 async def update_domain(chat: Chat, match):
-    domain_name = chat.message['text'].split("update_domain ")[-1]
+    domain_name = _extract_message(chat, "update_domain ")
     if not db.get_domain(domain_name):
         return await chat.send_text("Добавьте домен командой /add_domains.")
     fetched_domains = await fetch_domains_info([domain_name])
@@ -59,10 +64,7 @@ async def update_domain(chat: Chat, match):
 
 @bot.command(r"/add_domains +")
 async def add_domains(chat: Chat, match):
-    domain_names = set(
-        chat.message['text'].split("/add_domains ")[-1]
-            .strip().replace('\n', '').split(',')
-    )
+    domain_names = set(_extract_message(chat, '/add_domains').strip().replace('\n', '').split(','))
     for domain_name in domain_names.copy():
         if db.get_domain(domain_name):
             await chat.send_text(f"Домен {domain_name} уже добавлен и будет пропущен.")
@@ -80,7 +82,7 @@ async def add_domains(chat: Chat, match):
 
 @bot.command(r"/delete_domain +")
 async def delete_domain(chat: Chat, match):
-    domain_name = chat.message['text'].split("delete ")[-1]
+    domain_name = _extract_message(chat, "/delete_domain ")
     db.delete_by_domain_name(domain_name)
     return await chat.send_text(f"Домен {domain_name} удалён.")
 
