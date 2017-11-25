@@ -1,21 +1,12 @@
-import os
 import asyncio
+
 from aiotg import Bot, Chat
-from domain_info_collector import fetch_domains_info
+
 import db
-from settings import BOT_TOKEN_FILE
+from domain_info_collector import fetch_domains_info
+from settings import BOT_TOKEN
 
-
-def _get_token():
-    try:
-        with BOT_TOKEN_FILE.open() as f:
-            token = f.read()
-    except FileNotFoundError:
-        token = os.environ.get("BOT_TOKEN", "")
-    return token
-
-
-bot = Bot(_get_token())
+bot = Bot(BOT_TOKEN)
 
 
 def _extract_message(chat: Chat, command_name: str) -> str:
@@ -56,7 +47,7 @@ async def update_domain(chat: Chat, match):
     fetched_domains = await fetch_domains_info([domain_name])
     if fetched_domains:
         fetched_domain = fetched_domains[-1]
-        db.add_domain(fetched_domain)
+        db.update_domain(fetched_domain)
         return await chat.send_text(f"Домен {fetched_domain['domain']} успешно обновлён.")
     else:
         return await chat.send_text(f"Не удалось собрать информацию о {domain_name}.")
@@ -100,7 +91,7 @@ async def check_domains(chat: Chat, match):
 @bot.command(r"/subscribe")
 async def subscribe(chat: Chat, match):
     user = {'chat_id': chat.id, 'name': str(chat.sender)}
-    db.add_user(user)
+    db.subscribe_user(user)
     return await chat.send_text("Буду оповещать вас ежемесячно об истекающих доменах.")
 
 
@@ -113,6 +104,7 @@ async def unsubscribe(chat: Chat, match):
 @bot.command(r'/ping')
 async def pong(chat: Chat, match):
     chat.send_text('Pong 🏓')
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
