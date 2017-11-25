@@ -127,7 +127,7 @@ def subscribe_user(user_data: dict):
         session.add(user)
         session.commit()
     else:
-        add_user(**user_data)
+        add_user(user_data)
 
 
 def unsubscribe_user(chat_id: str):
