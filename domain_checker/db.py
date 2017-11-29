@@ -51,6 +51,7 @@ class Subscriber(Base):
     name = Column(String)
     chat_id = Column(Integer)
     subscribed = Column(Boolean, default=True)
+    last_informed = Column(DateTime, default=datetime.datetime.fromtimestamp(0))
 
     @classmethod
     def get_by_chat_id(cls, chat_id: str):
@@ -61,6 +62,7 @@ class Subscriber(Base):
             'name': self.name,
             'chat_id': self.chat_id,
             'subscribed': self.subscribed,
+            'last_informed': self.last_informed,
         }
 
 
@@ -143,3 +145,13 @@ def unsubscribe_user(chat_id: str):
 def get_subscribed_users() -> [dict]:
     subs = session.query(Subscriber).filter(Subscriber.subscribed == True).all()
     return [sub.to_dict() for sub in subs]
+
+
+def update_user_notification_time(chat_id: str) -> bool:
+    user = Subscriber.get_by_chat_id(chat_id)
+    if user:
+        user.last_informed = datetime.datetime.now()
+        session.add(user)
+        session.commit()
+        return True
+    return False

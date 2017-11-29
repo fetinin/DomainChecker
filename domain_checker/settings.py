@@ -20,5 +20,5 @@ BOT_TOKEN = _get_token()
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://postgres:123456@172.17.0.2/domain_checker')
 
 _notification_days = os.environ.get('NOTIFICATIONS_INTERVAL', 14)
-NOTIFICATIONS_INTERVAL = int(datetime.timedelta(days=_notification_days).total_seconds())
+NOTIFICATIONS_INTERVAL = datetime.timedelta(days=_notification_days).days
 DOMAIN_EXPIRATION_DAYS = os.environ.get('DOMAIN_EXPIRATION_DAYS', 30)
