@@ -92,7 +92,7 @@ async def check_domains(chat: Chat, match):
 async def subscribe(chat: Chat, match):
     user = {'chat_id': chat.id, 'name': str(chat.sender)}
     db.subscribe_user(user)
-    return await chat.send_text("Буду оповещать вас ежемесячно об истекающих доменах.")
+    return await chat.send_text("Буду переодически оповещать вас об истекающих доменах.")
 
 
 @bot.command(r"/unsubscribe")
