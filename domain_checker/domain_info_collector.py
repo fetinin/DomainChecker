@@ -3,18 +3,16 @@ import logging
 import random
 from typing import List, Set
 
-from aiohttp import ClientSession
 from bs4 import BeautifulSoup
+from requestium import Session
 
-logging.basicConfig(format='%(asctime)s |%(levelname)s| %(message)s', level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
-async def _fetch(url: str, headers: dict) -> str:
-    async with ClientSession(headers=headers) as session:
-        async with session.get(url) as response:
-            logger.info(f"fetcing {url}")
-            return await response.text()
+def _fetch(url: str, session: Session) -> str:
+    logger.info(f"fetcing {url}")
+    return session.get(url).text
 
 
 def _extract_info_from_response(response: str) -> dict:
@@ -29,18 +27,25 @@ def _extract_info_from_response(response: str) -> dict:
 
 
 async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
-    url = "https://www.whois.com/whois/{}"
+    url = "https://www.whois.com/whois/{domain_name}"
     headers = {
-        'user_agent': 'Mozilla/5.0 (X11; Linux x86_64) '
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) '
                       'AppleWebKit/537.36 (KHTML, like Gecko) '
                       'Chrome/62.0.3202.62 Safari/537.36'
     }
+    session = Session(
+        webdriver_path='WEBDRIVER_PATH',
+        browser='chrome',
+        default_timeout=15,
+        webdriver_options={'arguments': ['headless']},
+    )
+    session.headers.update(headers)
 
     domains_info = []
     for domain in domains:
         await asyncio.sleep(random.randint(2, 6))
         try:
-            resp = await _fetch(url.format(domain), headers)
+            resp = _fetch(url.format(domain_name=domain), session)
             info = _extract_info_from_response(resp)
         except Exception as err:
             logging.error(err)

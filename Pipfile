@@ -6,15 +6,19 @@ name = "pypi"
 
 
 [requires]
+
 python_full_version = "3.6.3"
 
+
 [dev-packages]
+
+
 
 [packages]
 
 aiohttp = "*"
 "bs4" = "*"
-maya = "*"
 aiotg = "*"
-sqlalchemy = "*"
+SQLAlchemy = "*"
 "psycopg2" = "*"
+requestium = "*"

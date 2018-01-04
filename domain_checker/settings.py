@@ -1,5 +1,6 @@
-import os
 import datetime
+import logging
+import os
 import pathlib
 
 
@@ -22,3 +23,6 @@ DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://postgres:12
 _notification_days = os.environ.get('NOTIFICATIONS_INTERVAL', 14)
 NOTIFICATIONS_INTERVAL = datetime.timedelta(days=_notification_days).days
 DOMAIN_EXPIRATION_DAYS = os.environ.get('DOMAIN_EXPIRATION_DAYS', 30)
+WEBDRIVER_PATH = os.environ.get('WEBDRIVER_PATH', './chromedriver')
+
+logging.basicConfig(format='%(asctime)s |%(levelname)s| %(message)s', level=logging.INFO)
