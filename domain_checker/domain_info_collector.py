@@ -2,6 +2,7 @@ import asyncio
 import logging
 import random
 from typing import List, Set
+import settings
 
 from bs4 import BeautifulSoup
 from requestium import Session
@@ -12,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 def _fetch(url: str, session: Session) -> str:
     logger.info(f"fetcing {url}")
-    return session.get(url).text
+    session.driver.get(url)
+    return session.driver.page_source
 
 
 def _extract_info_from_response(response: str) -> dict:
@@ -28,18 +30,12 @@ def _extract_info_from_response(response: str) -> dict:
 
 async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
     url = "https://www.whois.com/whois/{domain_name}"
-    headers = {
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/62.0.3202.62 Safari/537.36'
-    }
     session = Session(
-        webdriver_path='WEBDRIVER_PATH',
+        webdriver_path=settings.WEBDRIVER_PATH,
         browser='chrome',
         default_timeout=15,
         webdriver_options={'arguments': ['headless']},
     )
-    session.headers.update(headers)
 
     domains_info = []
     for domain in domains:
@@ -51,5 +47,8 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
             logging.exception(err)
         else:
             domains_info.append(info)
+        finally:
+            session.driver.close()
+            session.close()
 
     return domains_info
