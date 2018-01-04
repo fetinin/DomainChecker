@@ -56,7 +56,10 @@ async def update_domain(chat: Chat, match):
 
 @bot.command(r"/add_domains +")
 async def add_domains(chat: Chat, match):
-    domain_names = set(_extract_message(chat, '/add_domains').strip().replace('\n', '').split(','))
+    domain_names = {
+        domain.strip().replace('\n', '') for domain in
+        _extract_message(chat, '/add_domains').split(',')
+    }
     for domain_name in domain_names.copy():
         if db.get_domain(domain_name):
             await chat.send_text(f"Домен {domain_name} уже добавлен и будет пропущен.")

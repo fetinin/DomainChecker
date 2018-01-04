@@ -20,6 +20,8 @@ def _fetch(url: str, session: Session) -> str:
 def _extract_info_from_response(response: str) -> dict:
     soup = BeautifulSoup(response, 'html.parser')
     parsed_domain_info_block = soup.find('div', {'class': 'df-block'})
+    if parsed_domain_info_block is None:
+        raise ValueError("Failed to find div.df-block in response html.")
     parsed_domain_info = parsed_domain_info_block.find_all('div', {'class': 'df-row'})
 
     domain_info = (line.get_text().split(':') for line in parsed_domain_info)
@@ -39,17 +41,18 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
     )
 
     domains_info = []
-    for domain in domains:
-        await asyncio.sleep(random.randint(2, 6))
-        try:
-            resp = _fetch(url.format(domain_name=domain), session)
-            info = _extract_info_from_response(resp)
-        except Exception as err:
-            logging.exception(err)
-        else:
-            domains_info.append(info)
-        finally:
-            session.driver.close()
-            session.close()
+    try:
+        for domain in domains:
+            await asyncio.sleep(random.randint(2, 6))
+            try:
+                resp = _fetch(url.format(domain_name=domain), session)
+                info = _extract_info_from_response(resp)
+            except Exception as err:
+                logging.exception(err)
+            else:
+                domains_info.append(info)
+    finally:
+        session.driver.close()
+        session.close()
 
     return domains_info
