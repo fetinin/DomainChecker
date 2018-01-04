@@ -11,7 +11,8 @@ bot = Bot(BOT_TOKEN)
 
 def _extract_message(chat: Chat, command_name: str) -> str:
     """Get rid of command from chat message."""
-    return chat.message['text'].split(command_name)[-1]
+    msg = chat.message['text'].split(command_name)[-1]
+    return msg.strip(" ").strip("\n")
 
 
 @bot.command(r"/check +")
@@ -80,7 +81,7 @@ async def delete_domain(chat: Chat, match):
 
 @bot.command(r"/check_domains [0-9]+")
 async def check_domains(chat: Chat, match):
-    days = int(chat.message['text'].split('check_domains ')[-1])
+    days = int(_extract_message(chat, 'check_domains '))
     domains = db.get_domains_expire_in(days)
     msg = "\n".join([f"{domain['domain']} истекает {domain['expiration_date']}" for domain in domains])
     if not msg:
