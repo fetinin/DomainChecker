@@ -48,7 +48,7 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
             resp = _fetch(url.format(domain_name=domain), session)
             info = _extract_info_from_response(resp)
         except Exception as err:
-            logging.error(err)
+            logging.exception(err)
         else:
             domains_info.append(info)
 
