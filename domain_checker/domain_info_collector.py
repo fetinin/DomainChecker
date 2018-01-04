@@ -34,7 +34,8 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
         webdriver_path=settings.WEBDRIVER_PATH,
         browser='chrome',
         default_timeout=15,
-        webdriver_options={'arguments': ['headless']},
+        webdriver_options={'arguments': ['headless'],
+                           'binary_location': settings.GOOGLE_CHROME_SHIM},
     )
 
     domains_info = []

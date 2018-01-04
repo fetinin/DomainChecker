@@ -25,5 +25,6 @@ NOTIFICATIONS_INTERVAL = datetime.timedelta(days=_notification_days).days
 DOMAIN_EXPIRATION_DAYS = os.environ.get('DOMAIN_EXPIRATION_DAYS', 30)
 WEBDRIVER_PATH = os.environ.get('WEBDRIVER_PATH', './chromedriver')
 WEBDRIVER_PATH = str(ROOT / WEBDRIVER_PATH)
+GOOGLE_CHROME_SHIM = os.environ.get('GOOGLE_CHROME_SHIM', '/usr/bin/')
 
 logging.basicConfig(format='%(asctime)s |%(levelname)s| %(message)s', level=logging.INFO)
