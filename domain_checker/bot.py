@@ -71,6 +71,8 @@ async def add_domains(chat: Chat, match):
             db.add_domain(fetched_domain)
             fetched_names = "\n".join((d['domain'] for d in fetched_domains))
         return await chat.send_text(f"Успешно добавлены: \n{fetched_names}")
+    elif not domain_names:
+        return await chat.send_text(f"Все домены были пропущены.")
     else:
         return await chat.send_text(f"Не удалось собрать информацию о доменах.")
 

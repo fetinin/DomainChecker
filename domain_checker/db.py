@@ -1,4 +1,5 @@
 import datetime
+from contextlib import contextmanager
 from operator import setitem
 
 from sqlalchemy import create_engine, Column, Integer, String, Date, Boolean, DateTime
@@ -13,7 +14,19 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
-session = Session()
+
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 class Domain(Base):
@@ -29,7 +42,7 @@ class Domain(Base):
     extra_info = Column(JSON)
 
     @classmethod
-    def get_by_name(cls, domain_name: str):
+    def get_by_name(cls, domain_name: str, session: Session):
         return session.query(cls).filter(cls.domain == domain_name).one_or_none()
 
     def to_dict(self) -> dict:
@@ -54,7 +67,7 @@ class Subscriber(Base):
     last_informed = Column(DateTime, default=datetime.datetime.fromtimestamp(0))
 
     @classmethod
-    def get_by_chat_id(cls, chat_id: str):
+    def get_by_chat_id(cls, chat_id: str, session: Session):
         return session.query(cls).filter(cls.chat_id == chat_id).one_or_none()
 
     def to_dict(self):
@@ -81,77 +94,87 @@ def _normalize_user_data(new_attrs: dict) -> dict:
 
 
 def get_domain(domain_name: str) -> dict or None:
-    domain = Domain.get_by_name(domain_name)
-    if domain:
-        return domain.to_dict()
+    with session_scope() as session:
+        domain = Domain.get_by_name(domain_name, session)
+        if domain:
+            return domain.to_dict()
 
 
 def get_domains_expire_in(days: int):
     exp = (datetime.datetime.today() + datetime.timedelta(days=days)).date()
-    domains = session.query(Domain).filter(Domain.expiration_date <= exp).all()
-    return [domain.to_dict() for domain in domains]
+    with session_scope() as session:
+        domains = session.query(Domain).filter(Domain.expiration_date <= exp).all()
+        return [domain.to_dict() for domain in domains]
 
 
 def delete_by_domain_name(domain_name: str) -> None:
-    domain = Domain.get_by_name(domain_name)
-    if domain:
-        session.delete(domain)
-        session.commit()
+    with session_scope() as session:
+        domain = Domain.get_by_name(domain_name, session)
+        if domain:
+            session.delete(domain)
+            session.commit()
 
 
 def add_domain(domain_data: dict) -> None:
-    session.add(Domain(**_normalize_domain_data(domain_data)))
-    session.commit()
+    with session_scope() as session:
+        session.add(Domain(**_normalize_domain_data(domain_data)))
+        session.commit()
 
 
 def update_domain(domain_data: dict):
     domain_name = domain_data['domain']
-    domain = Domain.get_by_name(domain_name)
-    if domain:
-        for k, v in _normalize_domain_data(domain_data).items():
-            setattr(domain, k, v)
-        session.add(domain)
-        session.commit()
-        return True
+    with session_scope() as session:
+        domain = Domain.get_by_name(domain_name, session)
+        if domain:
+            for k, v in _normalize_domain_data(domain_data).items():
+                setattr(domain, k, v)
+                session.add(domain)
+                session.commit()
+            return True
     return False
 
 
 def add_user(user_data: dict):
-    session.add(Subscriber(**_normalize_user_data(user_data)))
-    session.commit()
+    with session_scope() as session:
+        session.add(Subscriber(**_normalize_user_data(user_data)))
+        session.commit()
 
 
 def subscribe_user(user_data: dict):
     user_data = _normalize_user_data(user_data)
-    user = Subscriber.get_by_chat_id(user_data['chat_id'])
-    if user and not user.subscribed:
-        user.subscribed = True
-        session.add(user)
-        session.commit()
-    else:
-        add_user(user_data)
+    with session_scope() as session:
+        user = Subscriber.get_by_chat_id(user_data['chat_id'], session)
+        if user and not user.subscribed:
+            user.subscribed = True
+            session.add(user)
+            session.commit()
+        else:
+            add_user(user_data)
 
 
 def unsubscribe_user(chat_id: str):
-    user = Subscriber.get_by_chat_id(chat_id)
-    if user:
-        user.subscribed = False
-        session.add(user)
-        session.commit()
-        return True
+    with session_scope() as session:
+        user = Subscriber.get_by_chat_id(chat_id, session)
+        if user:
+            user.subscribed = False
+            session.add(user)
+            session.commit()
+            return True
     return False
 
 
 def get_subscribed_users() -> [dict]:
-    subs = session.query(Subscriber).filter(Subscriber.subscribed == True).all()
-    return [sub.to_dict() for sub in subs]
+    with session_scope() as session:
+        subs = session.query(Subscriber).filter(Subscriber.subscribed == True).all()
+        return [sub.to_dict() for sub in subs]
 
 
 def update_user_notification_time(chat_id: str) -> bool:
-    user = Subscriber.get_by_chat_id(chat_id)
-    if user:
-        user.last_informed = datetime.datetime.now()
-        session.add(user)
-        session.commit()
-        return True
+    with session_scope() as session:
+        user = Subscriber.get_by_chat_id(chat_id, session)
+        if user:
+            user.last_informed = datetime.datetime.now()
+            session.add(user)
+            session.commit()
+            return True
     return False

@@ -2,11 +2,11 @@ import asyncio
 import logging
 import random
 from typing import List, Set
-import settings
 
 from bs4 import BeautifulSoup
 from requestium import Session
 
+import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +36,10 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
         webdriver_path=settings.WEBDRIVER_PATH,
         browser='chrome',
         default_timeout=15,
-        webdriver_options={'arguments': ['headless'],
-                           'binary_location': settings.GOOGLE_CHROME_SHIM},
+        webdriver_options={
+            'arguments': ['headless'],
+            'binary_location': settings.GOOGLE_CHROME_SHIM
+        },
     )
 
     domains_info = []
