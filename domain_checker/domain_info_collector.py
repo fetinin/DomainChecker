@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 def _fetch(url: str, session: Session) -> str:
     logger.info(f"fetcing {url}")
     session.driver.get(url)
+    session.driver.execute_script("refreshWhois();")
     return session.driver.page_source
 
 
@@ -45,7 +46,7 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
     domains_info = []
     try:
         for domain in domains:
-            await asyncio.sleep(random.randint(2, 6))
+            await asyncio.sleep(random.randint(2, 4))
             try:
                 resp = _fetch(url.format(domain_name=domain), session)
                 info = _extract_info_from_response(resp)
