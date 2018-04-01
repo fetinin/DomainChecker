@@ -2,7 +2,6 @@ import asyncio
 import logging
 import random
 from typing import List, Set
-import time
 
 from bs4 import BeautifulSoup
 from requestium import Session
@@ -16,7 +15,6 @@ def _fetch(url: str, session: Session) -> str:
     logger.info(f"fetcing {url}")
     session.driver.get(url)
     session.driver.execute_script("refreshWhois();")
-    time.sleep(2)  # wait for js to fetch data, async sleep doesn't work
     return session.driver.page_source
 
 
