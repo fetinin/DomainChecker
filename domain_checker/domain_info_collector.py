@@ -2,6 +2,7 @@ import asyncio
 import logging
 import random
 from typing import List, Set
+import time
 
 from bs4 import BeautifulSoup
 from requestium import Session
@@ -11,11 +12,11 @@ import settings
 logger = logging.getLogger(__name__)
 
 
-async def _fetch(url: str, session: Session) -> str:
+def _fetch(url: str, session: Session) -> str:
     logger.info(f"fetcing {url}")
     session.driver.get(url)
     session.driver.execute_script("refreshWhois();")
-    await asyncio.sleep(2)  # wait for js to fetch data
+    time.sleep(2)  # wait for js to fetch data, async sleep doesn't work
     return session.driver.page_source
 
 
@@ -49,7 +50,7 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
         for domain in domains:
             await asyncio.sleep(random.randint(2, 4))
             try:
-                resp = await _fetch(url.format(domain_name=domain), session)
+                resp = _fetch(url.format(domain_name=domain), session)
                 info = _extract_info_from_response(resp)
             except Exception as err:
                 logging.exception(err)
