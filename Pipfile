@@ -12,6 +12,7 @@ python_full_version = "3.6"
 
 [dev-packages]
 
+black = "*"
 
 
 [packages]
@@ -19,6 +20,6 @@ python_full_version = "3.6"
 aiohttp = "*"
 "bs4" = "*"
 aiotg = "*"
-SQLAlchemy = "*"
+sqlalchemy = "*"
 "psycopg2" = "*"
 requestium = "*"
