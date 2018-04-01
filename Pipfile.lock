@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b497c5cead17174804c28a62a1400af99055f89c7da67a70092cba7ce2b0d64f"
+            "sha256": "60862d001bc3d1ab557e84ae7ad57b23cae7208d3991c6d544b103101f1bb2fc"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -12,13 +12,13 @@
             "platform_release": "4.13.0-37-generic",
             "platform_system": "Linux",
             "platform_version": "#42-Ubuntu SMP Wed Mar 7 14:13:23 UTC 2018",
-            "python_full_version": "3.6.3",
+            "python_full_version": "3.6.4",
             "python_version": "3.6",
             "sys_platform": "linux"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_full_version": "3.6.3"
+            "python_version": "3.6"
         },
         "sources": [
             {
