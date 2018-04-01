@@ -20,10 +20,11 @@ import asyncio
 import inspect
 from functools import wraps
 
-__all__ = ['memoize']
+__all__ = ["memoize"]
 
 
 def _wrap_coroutine_storage(cache_dict, key, future):
+
     async def wrapper():
         val = await future
         cache_dict[key] = val
@@ -33,6 +34,7 @@ def _wrap_coroutine_storage(cache_dict, key, future):
 
 
 def _wrap_value_in_coroutine(val):
+
     async def wrapper():
         return val
 
@@ -60,7 +62,9 @@ def memoize(ignore_values: (set, None)):
                 val = __cache[key]
                 if asyncio.iscoroutinefunction(f):
                     return _wrap_value_in_coroutine(val)
+
                 return val
+
             except KeyError:
                 val = f(*args, **kwargs)
 

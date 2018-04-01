@@ -19,14 +19,15 @@ def _fetch(url: str, session: Session) -> str:
 
 
 def _extract_info_from_response(response: str) -> dict:
-    soup = BeautifulSoup(response, 'html.parser')
-    parsed_domain_info_block = soup.find('div', {'class': 'df-block'})
+    soup = BeautifulSoup(response, "html.parser")
+    parsed_domain_info_block = soup.find("div", {"class": "df-block"})
     if parsed_domain_info_block is None:
         raise ValueError("Failed to find div.df-block in response html.")
-    parsed_domain_info = parsed_domain_info_block.find_all('div', {'class': 'df-row'})
 
-    domain_info = (line.get_text().split(':') for line in parsed_domain_info)
-    domain_info = {k.lower().replace(' ', '_'): v for k, v in domain_info}
+    parsed_domain_info = parsed_domain_info_block.find_all("div", {"class": "df-row"})
+
+    domain_info = (line.get_text().split(":") for line in parsed_domain_info)
+    domain_info = {k.lower().replace(" ", "_"): v for k, v in domain_info}
 
     return domain_info
 
@@ -35,11 +36,10 @@ async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
     url = "https://www.whois.com/whois/{domain_name}"
     session = Session(
         webdriver_path=settings.WEBDRIVER_PATH,
-        browser='chrome',
+        browser="chrome",
         default_timeout=15,
         webdriver_options={
-            'arguments': ['headless'],
-            'binary_location': settings.GOOGLE_CHROME_SHIM
+            "arguments": ["headless"], "binary_location": settings.GOOGLE_CHROME_SHIM
         },
     )
 

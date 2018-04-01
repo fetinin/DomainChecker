@@ -21,16 +21,18 @@ def session_scope():
     session = Session()
     try:
         yield session
+
         session.commit()
     except:
         session.rollback()
         raise
+
     finally:
         session.close()
 
 
 class Domain(Base):
-    __tablename__ = 'domains'
+    __tablename__ = "domains"
 
     id = Column(Integer, primary_key=True)
     domain = Column(String, unique=True)
@@ -58,7 +60,7 @@ class Domain(Base):
 
 
 class Subscriber(Base):
-    __tablename__ = 'subscribers'
+    __tablename__ = "subscribers"
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -72,24 +74,27 @@ class Subscriber(Base):
 
     def to_dict(self):
         return {
-            'name': self.name,
-            'chat_id': self.chat_id,
-            'subscribed': self.subscribed,
-            'last_informed': self.last_informed,
+            "name": self.name,
+            "chat_id": self.chat_id,
+            "subscribed": self.subscribed,
+            "last_informed": self.last_informed,
         }
 
 
 def _normalize_domain_data(new_attrs: dict) -> dict:
-    allowed_keys = {'domain', 'registration_date',
-                    'expiration_date', 'status', 'name_servers'}
-    kwargs = {'extra_info': {}}
+    allowed_keys = {
+        "domain", "registration_date", "expiration_date", "status", "name_servers"
+    }
+    kwargs = {"extra_info": {}}
     for k, v in new_attrs.items():
-        setitem(kwargs, k, v) if k in allowed_keys else setitem(kwargs['extra_info'], k, v)
+        setitem(kwargs, k, v) if k in allowed_keys else setitem(
+            kwargs["extra_info"], k, v
+        )
     return kwargs
 
 
 def _normalize_user_data(new_attrs: dict) -> dict:
-    allowed_keys = {'name', 'chat_id', 'subscribed'}
+    allowed_keys = {"name", "chat_id", "subscribed"}
     return {k: v for k, v in new_attrs.items() if k in allowed_keys}
 
 
@@ -122,7 +127,7 @@ def add_domain(domain_data: dict) -> None:
 
 
 def update_domain(domain_data: dict):
-    domain_name = domain_data['domain']
+    domain_name = domain_data["domain"]
     with session_scope() as session:
         domain = Domain.get_by_name(domain_name, session)
         if domain:
@@ -131,6 +136,7 @@ def update_domain(domain_data: dict):
                 session.add(domain)
                 session.commit()
             return True
+
     return False
 
 
@@ -143,7 +149,7 @@ def add_user(user_data: dict):
 def subscribe_user(user_data: dict):
     user_data = _normalize_user_data(user_data)
     with session_scope() as session:
-        user = Subscriber.get_by_chat_id(user_data['chat_id'], session)
+        user = Subscriber.get_by_chat_id(user_data["chat_id"], session)
         if user and not user.subscribed:
             user.subscribed = True
             session.add(user)
@@ -160,6 +166,7 @@ def unsubscribe_user(chat_id: str):
             session.add(user)
             session.commit()
             return True
+
     return False
 
 
@@ -177,4 +184,5 @@ def update_user_notification_time(chat_id: str) -> bool:
             session.add(user)
             session.commit()
             return True
+
     return False
