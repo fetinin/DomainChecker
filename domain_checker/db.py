@@ -23,7 +23,7 @@ def session_scope():
         yield session
 
         session.commit()
-    except:
+    except Exception:
         session.rollback()
         raise
 
@@ -37,8 +37,8 @@ class Domain(Base):
     id = Column(Integer, primary_key=True)
     domain = Column(String, unique=True)
     name_servers = Column(String)
-    registration_date = Column(Date)
-    expiration_date = Column(Date)
+    registration_date = Column(Date, nullable=False)
+    expiration_date = Column(Date, nullable=False)
     status = Column(String)
     last_update = Column(DateTime, default=sql_func.now(), onupdate=sql_func.now())
     extra_info = Column(JSON)
@@ -55,7 +55,6 @@ class Domain(Base):
             "expiration_date": self.expiration_date.strftime("%d-%m-%Y"),
             "status": self.status,
             "last_update": self.last_update,
-            "extra_info": self.extra_info,
         }
 
 
@@ -120,10 +119,12 @@ def delete_by_domain_name(domain_name: str) -> None:
             session.commit()
 
 
-def add_domain(domain_data: dict) -> None:
+def add_domain(domain_data: dict) -> dict:
     with session_scope() as session:
-        session.add(Domain(**_normalize_domain_data(domain_data)))
+        domain = Domain(**_normalize_domain_data(domain_data))
+        session.add(domain)
         session.commit()
+        return domain.to_dict()
 
 
 def update_domain(domain_data: dict):

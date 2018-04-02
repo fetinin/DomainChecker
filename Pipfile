@@ -18,8 +18,6 @@ black = "*"
 [packages]
 
 aiohttp = "*"
-"bs4" = "*"
 aiotg = "*"
-sqlalchemy = "*"
+SQLAlchemy = "*"
 "psycopg2-binary" = "*"
-requestium = "*"

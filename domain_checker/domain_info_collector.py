@@ -1,61 +1,44 @@
-import asyncio
 import logging
-import random
 from typing import List, Set
+from settings import API_KEY
 
-from bs4 import BeautifulSoup
-from requestium import Session
-
-import settings
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
-
-def _fetch(url: str, session: Session) -> str:
-    logger.info(f"fetcing {url}")
-    session.driver.get(url)
-    session.driver.execute_script("refreshWhois();")
-    return session.driver.page_source
+API_URL = f"https://api.jsonwhois.io/whois/domain?key={API_KEY}&domain={{domain}}"
 
 
-def _extract_info_from_response(response: str) -> dict:
-    soup = BeautifulSoup(response, "html.parser")
-    parsed_domain_info_block = soup.find("div", {"class": "df-block"})
-    if parsed_domain_info_block is None:
-        raise ValueError("Failed to find div.df-block in response html.")
+async def _fetch(url: str, session: aiohttp.ClientSession) -> dict:
+    async with session.get(url) as resp:
+        logger.info(f"fetcing {url}")
+        return await resp.json()
 
-    parsed_domain_info = parsed_domain_info_block.find_all("div", {"class": "df-row"})
 
-    domain_info = (line.get_text().split(":") for line in parsed_domain_info)
-    domain_info = {k.lower().replace(" ", "_"): v for k, v in domain_info}
-
-    return domain_info
+def _extract_info_from_response(response: dict) -> dict:
+    result = response["result"]
+    return {
+        "domain": result["name"],
+        "nameservers": ", ".join(result["nameservers"]),
+        "registration_date": result["created"],
+        "expiration_date": result["expires"],
+        "status": ", ".join(result["status"]),
+        "extra_info": result,
+    }
 
 
 async def fetch_domains_info(domains: List[str] or Set[str]) -> List[dict]:
-    url = "https://www.whois.com/whois/{domain_name}"
-    session = Session(
-        webdriver_path=settings.WEBDRIVER_PATH,
-        browser="chrome",
-        default_timeout=15,
-        webdriver_options={
-            "arguments": ["headless"], "binary_location": settings.GOOGLE_CHROME_SHIM
-        },
-    )
+    url = API_URL
+    async with aiohttp.ClientSession() as session:
 
-    domains_info = []
-    try:
+        domains_info = []
         for domain in domains:
-            await asyncio.sleep(random.randint(2, 4))
             try:
-                resp = _fetch(url.format(domain_name=domain), session)
+                resp = await _fetch(url.format(domain=domain), session)
                 info = _extract_info_from_response(resp)
             except Exception as err:
                 logging.exception(err)
             else:
                 domains_info.append(info)
-    finally:
-        session.driver.close()
-        session.close()
 
     return domains_info

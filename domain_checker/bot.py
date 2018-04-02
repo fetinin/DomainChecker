@@ -36,9 +36,11 @@ async def add_domain(chat: Chat, match):
     fetched_domains = await fetch_domains_info([domain_name])
     if fetched_domains:
         fetched_domain = fetched_domains[-1]
-        db.add_domain(fetched_domain)
+        domain = db.add_domain(fetched_domain)
+        formatted_domain_info = "\n".join((f"{k}: {v}" for k, v in domain.items()))
         return await chat.send_text(
-            f"Домен {fetched_domain['domain']} успешно добавлен."
+            f"Домен {fetched_domain['domain']} успешно добавлен.\n"
+            f"{formatted_domain_info}"
         )
 
     else:

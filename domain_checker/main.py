@@ -22,8 +22,7 @@ async def notify_about_expired_domains():
                 for domain in expiring_domains
             ]
         )
-        usr_msg = f"Следующие домены истекают в течение " \
-                  f"{DOMAIN_EXPIRATION_DAYS} дней:\n {expiring_domains_msg}"
+        usr_msg = f"Следующие домены истекают в течение {DOMAIN_EXPIRATION_DAYS} дней:\n {expiring_domains_msg}"
         for user in users_to_notify:
             days_since_last_update = (
                 datetime.datetime.now() - user["last_informed"]
@@ -37,10 +36,11 @@ async def notify_about_expired_domains():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    asyncio.ensure_future(notify_about_expired_domains(), loop=loop)
-    loop.create_task(bot.loop())
-
+    asyncio.ensure_future(notify_about_expired_domains())
     try:
-        loop.run_forever()
+        logger.info("Bot started...")
+        bot.run()
     except KeyboardInterrupt:
         pass
+    finally:
+        loop.close()
