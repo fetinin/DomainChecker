@@ -4,7 +4,9 @@ import logging
 import datetime
 
 from bot import bot
-from db import get_domains_expire_in, get_subscribed_users, update_user_notification_time
+from db import (
+    get_domains_expire_in, get_subscribed_users, update_user_notification_time
+)
 from settings import NOTIFICATIONS_INTERVAL, DOMAIN_EXPIRATION_DAYS
 
 SECONDS_IN_ONE_DAY = 86400

@@ -19,10 +19,10 @@ def _extract_info_from_response(response: dict) -> dict:
     result = response["result"]
     return {
         "domain": result["name"],
-        "nameservers": ", ".join(result["nameservers"]),
+        "nameservers": ", ".join(result["nameservers"] or []),
         "registration_date": result["created"],
         "expiration_date": result["expires"],
-        "status": ", ".join(result["status"]),
+        "status": ", ".join(result["status"] or []),
         "extra_info": result,
     }
 
