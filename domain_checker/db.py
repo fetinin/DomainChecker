@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.types import JSON
 
+from helpers import format_date
 from settings import DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
@@ -51,8 +52,8 @@ class Domain(Base):
         return {
             "domain": self.domain,
             "name_servers": self.name_servers,
-            "registration_date": self.registration_date.strftime("%d-%m-%Y"),
-            "expiration_date": self.expiration_date.strftime("%d-%m-%Y"),
+            "registration_date": format_date(self.registration_date, "%d-%m-%Y"),
+            "expiration_date": format_date(self.expiration_date, "%d-%m-%Y"),
             "status": self.status,
             "last_update": self.last_update,
         }

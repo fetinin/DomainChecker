@@ -1,3 +1,4 @@
+import datetime
 from itertools import filterfalse, tee
 
 
@@ -9,3 +10,10 @@ def partition(pred, iterable):
     """
     t1, t2 = tee(iterable)
     return filter(pred, t1), filterfalse(pred, t2)
+
+
+def format_date(date: datetime.date, fmt: str):
+    if not date:
+        return ""
+
+    return date.strftime(fmt)
