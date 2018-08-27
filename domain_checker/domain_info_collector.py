@@ -1,4 +1,5 @@
 import logging
+
 from typing import List, Set
 from settings import API_KEY
 
@@ -17,12 +18,18 @@ async def _fetch(url: str, session: aiohttp.ClientSession) -> dict:
 
 def _extract_info_from_response(response: dict) -> dict:
     result = response["result"]
+    status = result["status"] or ""
+    nameservers = result["nameservers"] or ""
+    if isinstance(status, list):
+        status = ", ".join(status)
+    if isinstance(nameservers, list):
+        nameservers = ", ".join(nameservers)
     return {
         "domain": result["name"],
-        "nameservers": ", ".join(result["nameservers"] or []),
+        "nameservers": nameservers,
         "registration_date": result["created"],
         "expiration_date": result["expires"],
-        "status": ", ".join(result["status"] or []),
+        "status": status,
         "extra_info": result,
     }
 

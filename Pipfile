@@ -10,11 +10,6 @@ name = "pypi"
 python_version = "3.6"
 
 
-[dev-packages]
-
-black = "*"
-
-
 [packages]
 
 aiohttp = "*"
