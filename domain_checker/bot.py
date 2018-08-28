@@ -2,9 +2,9 @@ import asyncio
 
 from aiotg import Bot, Chat
 
-import db
-from domain_info_collector import fetch_domains_info
-from settings import BOT_TOKEN
+from . import db
+from .domain_info_collector import fetch_domains_info
+from .settings import BOT_TOKEN
 
 bot = Bot(BOT_TOKEN)
 

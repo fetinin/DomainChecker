@@ -9,8 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.types import JSON
 
-from helpers import format_date
-from settings import DATABASE_URL
+from .helpers import format_date
+from .settings import DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)

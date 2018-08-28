@@ -2,16 +2,16 @@ import asyncio
 import datetime
 import logging
 
-from bot import bot
-from db import (
+from domain_checker.bot import bot
+from domain_checker.db import (
     get_domains_expire_in,
     get_subscribed_users,
     list_domains,
     update_domain,
     update_user_notification_time,
 )
-from domain_info_collector import fetch_domains_info
-from settings import DOMAIN_EXPIRATION_DAYS, NOTIFICATIONS_INTERVAL
+from domain_checker.domain_info_collector import fetch_domains_info
+from domain_checker.settings import DOMAIN_EXPIRATION_DAYS, NOTIFICATIONS_INTERVAL
 
 SECONDS_IN_ONE_DAY = 86400
 
