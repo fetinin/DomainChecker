@@ -1,7 +1,8 @@
 import logging
 
 from typing import List, Set
-from settings import API_KEY
+
+from .settings import API_KEY
 
 import aiohttp
 
