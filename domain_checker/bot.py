@@ -108,7 +108,7 @@ async def check_domains(chat: Chat, match):
         ]
     )
     if not msg:
-        msg = "Все домены в порядке."
+        msg = "Все домены впорядке."
     return await chat.send_text(msg)
 
 

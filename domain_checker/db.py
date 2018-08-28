@@ -1,6 +1,7 @@
 import datetime
 from contextlib import contextmanager
 from operator import setitem
+from typing import List, Union
 
 from sqlalchemy import create_engine, Column, Integer, String, Date, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -35,8 +36,7 @@ def session_scope():
 class Domain(Base):
     __tablename__ = "domains"
 
-    id = Column(Integer, primary_key=True)
-    domain = Column(String, unique=True)
+    domain = Column(String, unique=True, primary_key=True)
     name_servers = Column(String)
     registration_date = Column(Date, nullable=False)
     expiration_date = Column(Date, nullable=False)
@@ -83,7 +83,11 @@ class Subscriber(Base):
 
 def _normalize_domain_data(new_attrs: dict) -> dict:
     allowed_keys = {
-        "domain", "registration_date", "expiration_date", "status", "name_servers"
+        "domain",
+        "registration_date",
+        "expiration_date",
+        "status",
+        "name_servers",
     }
     kwargs = {"extra_info": {}}
     for k, v in new_attrs.items():
@@ -98,7 +102,7 @@ def _normalize_user_data(new_attrs: dict) -> dict:
     return {k: v for k, v in new_attrs.items() if k in allowed_keys}
 
 
-def get_domain(domain_name: str) -> dict or None:
+def get_domain(domain_name: str) -> Union[dict, None]:
     with session_scope() as session:
         domain = Domain.get_by_name(domain_name, session)
         if domain:
@@ -109,6 +113,12 @@ def get_domains_expire_in(days: int):
     exp = (datetime.datetime.today() + datetime.timedelta(days=days)).date()
     with session_scope() as session:
         domains = session.query(Domain).filter(Domain.expiration_date <= exp).all()
+        return [domain.to_dict() for domain in domains]
+
+
+def list_domains() -> List[dict]:
+    with session_scope() as session:
+        domains = session.query(Domain).all()
         return [domain.to_dict() for domain in domains]
 
 
@@ -188,3 +198,7 @@ def update_user_notification_time(chat_id: str) -> bool:
             return True
 
     return False
+
+
+if __name__ == "__main__":
+    Base.metadata.create_all(engine)

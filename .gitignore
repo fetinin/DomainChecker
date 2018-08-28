@@ -63,3 +63,4 @@ venv.bak/
 .idea/
 *.secret
 domain_checker/db.json
+*.tmp

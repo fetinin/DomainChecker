@@ -19,7 +19,7 @@ BOT_TOKEN_FILE = ROOT / "token.secret"
 BOT_TOKEN = _get_token()
 
 DATABASE_URL = os.environ.get(
-    "DATABASE_URL", "postgresql+psycopg2://postgres:123456@172.17.0.2/domain_checker"
+    "DATABASE_URL", "postgresql+psycopg2://postgres@localhost/domain_checker"
 )
 
 _notification_days = os.environ.get("NOTIFICATIONS_INTERVAL", 14)
@@ -28,7 +28,7 @@ DOMAIN_EXPIRATION_DAYS = os.environ.get("DOMAIN_EXPIRATION_DAYS", 30)
 WEBDRIVER_PATH = os.environ.get("WEBDRIVER_PATH", "./chromedriver")
 WEBDRIVER_PATH = str(ROOT / WEBDRIVER_PATH)
 GOOGLE_CHROME_SHIM = os.environ.get("GOOGLE_CHROME_SHIM", "/usr/bin/")
-API_KEY = os.environ["API_KEY"]
+API_KEY = os.environ.get("API_KEY", "")
 
 logging.basicConfig(
     format="%(asctime)s |%(levelname)s| %(message)s", level=logging.INFO
