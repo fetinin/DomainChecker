@@ -38,7 +38,7 @@ class Domain(Base):
 
     domain = Column(String, unique=True, primary_key=True)
     name_servers = Column(String)
-    registration_date = Column(Date, nullable=False)
+    registration_date = Column(Date, nullable=True)
     expiration_date = Column(Date, nullable=False)
     status = Column(String)
     last_update = Column(DateTime, default=sql_func.now(), onupdate=sql_func.now())
