@@ -162,12 +162,16 @@ def subscribe_user(user_data: dict):
     user_data = _normalize_user_data(user_data)
     with session_scope() as session:
         user = Subscriber.get_by_chat_id(user_data["chat_id"], session)
-        if user and not user.subscribed:
-            user.subscribed = True
-            session.add(user)
-            session.commit()
-        else:
+        if not user:
             add_user(user_data)
+            return
+
+        if user.subscribed:
+            return
+
+        user.subscribed = True
+        session.add(user)
+        session.commit()
 
 
 def unsubscribe_user(chat_id: str):
