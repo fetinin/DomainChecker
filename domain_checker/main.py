@@ -38,8 +38,7 @@ async def notify_about_expired_domains():
         for user in users_to_notify:
             since_last_update = datetime.datetime.now() - user["last_informed"]
             logger.info(
-                f"{user['name']} was not notified for the last "
-                f"{since_last_update.days} days."
+                f"{user['name']} was last notified {since_last_update.days} days ago."
             )
             if since_last_update.days > NOTIFICATIONS_INTERVAL:
                 logger.info(f"Notifying {user['name']}.")
@@ -81,13 +80,13 @@ async def actualize_domains():
 
 
 async def main():
-    tasks = [bot.loop(), notify_about_expired_domains(), actualize_domains()]
+    tasks = [bot.loop(), notify_about_expired_domains()]
     await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
     try:
         logger.info("Bot started...")
-        asyncio.run(main())
+        asyncio.run(main(), debug=True)
     except KeyboardInterrupt:
         pass
