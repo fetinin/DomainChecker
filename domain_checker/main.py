@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 async def notify_about_expired_domains():
     while True:
+        logger.info("Checking if there is anyone to notify about expired domains.")
+
         expiring_domains = get_domains_expire_in(DOMAIN_EXPIRATION_DAYS)
         users_to_notify = get_subscribed_users()
         expiring_domains_msg = "\n".join(
@@ -32,8 +34,13 @@ async def notify_about_expired_domains():
             f"Следующие домены истекают в течение {DOMAIN_EXPIRATION_DAYS} дней:\n "
             f"{expiring_domains_msg}."
         )
+        logger.info(f"Found {len(users_to_notify)} users to notify.")
         for user in users_to_notify:
             since_last_update = datetime.datetime.now() - user["last_informed"]
+            logger.info(
+                f"{user['name']} was not notified for the last "
+                f"{since_last_update.days} days."
+            )
             if since_last_update.days > NOTIFICATIONS_INTERVAL:
                 logger.info(f"Notifying {user['name']}.")
                 bot.send_message(user["chat_id"], usr_msg)
