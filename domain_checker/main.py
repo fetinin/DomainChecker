@@ -1,3 +1,4 @@
+import os
 import asyncio
 import datetime
 import logging
@@ -87,6 +88,6 @@ async def main():
 if __name__ == "__main__":
     try:
         logger.info("Bot started...")
-        asyncio.run(main(), debug=True)
+        asyncio.run(main(), debug=bool(os.environ.get("CHECKER_DEBUG")))
     except KeyboardInterrupt:
         pass
