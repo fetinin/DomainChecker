@@ -12,7 +12,7 @@ from domain_checker.db import (
     update_user_notification_time,
 )
 from domain_checker.domain_info_collector import fetch_domains_info
-from domain_checker.settings import DOMAIN_EXPIRATION_DAYS, NOTIFICATIONS_INTERVAL
+from domain_checker.settings import Settings
 
 SECONDS_IN_ONE_DAY = 86400
 
@@ -23,7 +23,7 @@ async def notify_about_expired_domains():
     while True:
         logger.info("Checking if there is anyone to notify about expired domains.")
 
-        expiring_domains = get_domains_expire_in(DOMAIN_EXPIRATION_DAYS)
+        expiring_domains = get_domains_expire_in(Settings.DOMAIN_EXPIRATION_DAYS)
         users_to_notify = get_subscribed_users()
         expiring_domains_msg = "\n".join(
             [
@@ -32,8 +32,8 @@ async def notify_about_expired_domains():
             ]
         )
         usr_msg = (
-            f"Следующие домены истекают в течение {DOMAIN_EXPIRATION_DAYS} дней:\n "
-            f"{expiring_domains_msg}."
+            f"Следующие домены истекают в течение {Settings.DOMAIN_EXPIRATION_DAYS} "
+            f"дней:\n {expiring_domains_msg}."
         )
         logger.info(f"Found {len(users_to_notify)} users to notify.")
         for user in users_to_notify:
@@ -41,7 +41,7 @@ async def notify_about_expired_domains():
             logger.info(
                 f"{user['name']} was last notified {since_last_update.days} days ago."
             )
-            if since_last_update.days > NOTIFICATIONS_INTERVAL:
+            if since_last_update.days > Settings.NOTIFICATIONS_INTERVAL:
                 logger.info(f"Notifying {user['name']}.")
                 bot.send_message(user["chat_id"], usr_msg)
                 update_user_notification_time(user["chat_id"])

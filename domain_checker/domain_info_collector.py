@@ -2,13 +2,15 @@ import logging
 
 from typing import List, Set
 
-from .settings import API_KEY
+from .settings import Settings
 
 import aiohttp
 
 logger = logging.getLogger(__name__)
 
-API_URL = f"https://api.jsonwhois.io/whois/domain?key={API_KEY}&domain={{domain}}"
+API_URL = (
+    f"https://api.jsonwhois.io/whois/domain?key={Settings.API_KEY}&domain={{domain}}"
+)
 
 
 async def _fetch(url: str, session: aiohttp.ClientSession) -> dict:

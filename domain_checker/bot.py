@@ -4,9 +4,9 @@ from aiotg import Bot, Chat
 
 from . import db
 from .domain_info_collector import fetch_domains_info
-from .settings import BOT_TOKEN
+from .settings import Settings
 
-bot = Bot(BOT_TOKEN)
+bot = Bot(Settings.BOT_TOKEN)
 
 
 def _extract_message(chat: Chat, command_name: str) -> str:

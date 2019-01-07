@@ -1,5 +1,7 @@
 import datetime
+import os
 from itertools import filterfalse, tee
+from typing import get_type_hints
 
 
 def partition(pred, iterable):
@@ -17,3 +19,27 @@ def format_date(date: datetime.date, fmt: str):
         return ""
 
     return date.strftime(fmt)
+
+
+class SettingsParamMissing(Exception):
+    pass
+
+
+class SettingsMeta(type):
+    def __new__(mcs, name, bases, namespace, app_name="", reader=os.environ):
+        cls = super().__new__(mcs, name, bases, namespace)
+
+        for var_name, type_cls in get_type_hints(cls).items():
+            key_name = f"{app_name}_{var_name}" if app_name else var_name
+            try:
+                value = type_cls(reader[key_name])
+            # todo: handle conversion error
+            except KeyError:
+                if var_name not in namespace:
+                    raise SettingsParamMissing(
+                        f"{key_name} is required but not found in {reader}."
+                    ) from None
+            else:
+                setattr(cls, var_name, value)
+
+        return cls
