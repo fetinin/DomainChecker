@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from helpers import SettingsMeta
+from .helpers import SettingsMeta
 
 
 class Settings(metaclass=SettingsMeta, app_name="DOMAIN_CHECKER"):
