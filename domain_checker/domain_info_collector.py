@@ -30,6 +30,7 @@ def _extract_info_from_response(response: dict) -> dict:
     return {
         "domain": result["name"],
         "nameservers": nameservers,
+        "registered": result["registered"],
         "registration_date": result["created"],
         "expiration_date": result["expires"],
         "status": status,

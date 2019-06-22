@@ -4,13 +4,7 @@ import datetime
 import logging
 
 from domain_checker.bot import bot
-from domain_checker.db import (
-    get_domains_expire_in,
-    get_subscribed_users,
-    list_domains,
-    update_domain,
-    update_user_notification_time,
-)
+from domain_checker import db
 from domain_checker.domain_info_collector import fetch_domains_info
 from domain_checker.settings import Settings
 
@@ -23,8 +17,8 @@ async def notify_about_expired_domains():
     while True:
         logger.info("Checking if there is anyone to notify about expired domains.")
 
-        expiring_domains = get_domains_expire_in(Settings.DOMAIN_EXPIRATION_DAYS)
-        users_to_notify = get_subscribed_users()
+        expiring_domains = db.get_domains_expire_in(Settings.DOMAIN_EXPIRATION_DAYS)
+        users_to_notify = db.get_subscribed_users()
         expiring_domains_msg = "\n".join(
             [
                 f"{domain['domain']} истекает {domain['expiration_date']}"
@@ -44,7 +38,7 @@ async def notify_about_expired_domains():
             if since_last_update.days > Settings.NOTIFICATIONS_INTERVAL:
                 logger.info(f"Notifying {user['name']}.")
                 bot.send_message(user["chat_id"], usr_msg)
-                update_user_notification_time(user["chat_id"])
+                db.update_user_notification_time(user["chat_id"])
         await asyncio.sleep(SECONDS_IN_ONE_DAY)
 
 
@@ -65,11 +59,22 @@ async def actualize_domains():
                 await asyncio.sleep(sec_till_next_month)
                 continue
 
-        domains_names = [d["domain"] for d in list_domains()]
+        domains_names = [d["domain"] for d in db.list_domains()]
         domains_info = await fetch_domains_info(domains_names)
         for domain in domains_info:
             logger.info(f"Updating {domain['domain']} info.")
-            update_domain(domain)
+            if not domain["registered"]:
+                try:
+                    logger.info(f"Domain {domain['domain']} was unregistered and deleted")
+                    db.delete_by_domain_name(domain["domain"])
+                except Exception:
+                    logger.exception(f"Failed to delete domain {domain['domain']}")
+                continue
+
+            try:
+                db.update_domain(domain)
+            except Exception:
+                logger.exception(f"Failed to update domain {domain['domain']}")
 
         next_month = datetime.datetime.now() + datetime.timedelta(days=30)
 
@@ -81,7 +86,7 @@ async def actualize_domains():
 
 
 async def main():
-    tasks = [bot.loop(), notify_about_expired_domains()]
+    tasks = [bot.loop(), notify_about_expired_domains(), actualize_domains()]
     await asyncio.gather(*tasks)
 
 
