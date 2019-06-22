@@ -113,7 +113,12 @@ def get_domain(domain_name: str) -> Union[dict, None]:
 def get_domains_expire_in(days: int):
     exp = (datetime.datetime.today() + datetime.timedelta(days=days)).date()
     with session_scope() as session:
-        domains = session.query(Domain).filter(Domain.expiration_date <= exp).all()
+        domains = (
+            session.query(Domain).
+                filter(Domain.expiration_date <= exp).
+                order_by(Domain.expiration_date).
+                all()
+        )
         return [domain.to_dict() for domain in domains]
 
 
