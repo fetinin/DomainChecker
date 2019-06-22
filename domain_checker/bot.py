@@ -1,6 +1,7 @@
 import asyncio
 
 from aiotg import Bot, Chat
+from typing import Match
 
 from . import db
 from .domain_info_collector import fetch_domains_info
@@ -9,15 +10,9 @@ from .settings import Settings
 bot = Bot(Settings.BOT_TOKEN)
 
 
-def _extract_message(chat: Chat, command_name: str) -> str:
-    """Get rid of command from chat message."""
-    msg = chat.message["text"].split(command_name)[-1]
-    return msg.strip(" ").strip("\n")
-
-
-@bot.command(r"/check +")
-async def check(chat: Chat, match):
-    domain_name = _extract_message(chat, "/check ")
+@bot.command(r"/check (.+)")
+async def check(chat: Chat, match: Match):
+    domain_name = match.group(1)
     domain = db.get_domain(domain_name)
     if domain:
         formatted_domain_info = "\n".join((f"{k}: {v}" for k, v in domain.items()))
@@ -27,9 +22,9 @@ async def check(chat: Chat, match):
         return await chat.send_text(f"Домен {domain_name} не найден.")
 
 
-@bot.command(r"/add_domain +")
-async def add_domain(chat: Chat, match):
-    domain_name = _extract_message(chat, "/add_domain ")
+@bot.command(r"/add_domain (.+)")
+async def add_domain(chat: Chat, match: Match):
+    domain_name = match.group(1)
     if db.get_domain(domain_name):
         return await chat.send_text("Домен уже добавлен.")
 
@@ -47,9 +42,9 @@ async def add_domain(chat: Chat, match):
         return await chat.send_text(f"Не удалось собрать информацию о {domain_name}.")
 
 
-@bot.command(r"/update_domain +")
-async def update_domain(chat: Chat, match):
-    domain_name = _extract_message(chat, "update_domain ")
+@bot.command(r"/update_domain (.+)")
+async def update_domain(chat: Chat, match: Match):
+    domain_name = match.group(1)
     if not db.get_domain(domain_name):
         return await chat.send_text("Добавьте домен командой /add_domains.")
 
@@ -65,11 +60,11 @@ async def update_domain(chat: Chat, match):
         return await chat.send_text(f"Не удалось собрать информацию о {domain_name}.")
 
 
-@bot.command(r"/add_domains +")
-async def add_domains(chat: Chat, match):
+@bot.command(r"/add_domains (.+)")
+async def add_domains(chat: Chat, match: Match):
     domain_names = {
-        domain.strip().replace("\n", "")
-        for domain in _extract_message(chat, "/add_domains").split(",")
+        domain.strip().replace("\n", "").replace('http:', '').replace('/', '')
+        for domain in match.group(1).split(',')
     }
     for domain_name in domain_names.copy():
         if db.get_domain(domain_name):
@@ -90,16 +85,28 @@ async def add_domains(chat: Chat, match):
         return await chat.send_text(f"Не удалось собрать информацию о доменах.")
 
 
-@bot.command(r"/delete_domain +")
-async def delete_domain(chat: Chat, match):
-    domain_name = _extract_message(chat, "/delete_domain ")
+@bot.command(r"/delete_domain (.+)")
+async def delete_domain(chat: Chat, match: Match):
+    domain_name = match.group(1)
     db.delete_by_domain_name(domain_name)
     return await chat.send_text(f"Домен {domain_name} удалён.")
 
 
-@bot.command(r"/check_domains [0-9]+")
-async def check_domains(chat: Chat, match):
-    days = int(_extract_message(chat, "check_domains "))
+@bot.command(r"/delete_domains (.+)")
+async def delete_domains(chat: Chat, match: Match):
+    domain_names = {
+        domain.strip().replace("\n", "").replace('http:', '').replace('/', '')
+        for domain in match.group(1).split(',')
+    }
+    for domain in domain_names:
+        db.delete_by_domain_name(domain)
+
+    return await chat.send_text(f"Удалил 👍")
+
+
+@bot.command(r"/check_domains ([0-9]+)")
+async def check_domains(chat: Chat, match: Match):
+    days = int(match.group(1))
     domains = db.get_domains_expire_in(days)
     msg = "\n".join(
         [
@@ -113,7 +120,7 @@ async def check_domains(chat: Chat, match):
 
 
 @bot.command(r"/subscribe")
-async def subscribe(chat: Chat, match):
+async def subscribe(chat: Chat, match: Match):
     user = {"chat_id": chat.id, "name": str(chat.sender)}
     db.subscribe_user(user)
     return await chat.send_text(
@@ -122,13 +129,13 @@ async def subscribe(chat: Chat, match):
 
 
 @bot.command(r"/unsubscribe")
-async def unsubscribe(chat: Chat, match):
+async def unsubscribe(chat: Chat, match: Match):
     db.unsubscribe_user(chat.id)
     return await chat.send_text("Отписали вас от рассылки.")
 
 
 @bot.command(r"/ping")
-async def pong(chat: Chat, match):
+async def pong(chat: Chat, match: Match):
     chat.send_text("Pong 🏓")
 
 

@@ -5,12 +5,12 @@ from typing import List, Union
 
 from sqlalchemy import create_engine, Column, Integer, String, Date, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Query
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.types import JSON
 
-from .helpers import format_date
-from .settings import Settings
+from domain_checker.helpers import format_date
+from domain_checker.settings import Settings
 
 engine = create_engine(Settings.DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -21,6 +21,7 @@ Base = declarative_base()
 def session_scope():
     """Provide a transactional scope around a series of operations."""
     session = Session()
+    session.query()
     try:
         yield session
 
@@ -45,8 +46,8 @@ class Domain(Base):
     extra_info = Column(JSON)
 
     @classmethod
-    def get_by_name(cls, domain_name: str, session: Session):
-        return session.query(cls).filter(cls.domain == domain_name).one_or_none()
+    def get_by_name(cls, domain_name: str, session: Session()) -> Query:
+        return session.query(cls).filter(cls.domain == domain_name)
 
     def to_dict(self) -> dict:
         return {
@@ -104,7 +105,7 @@ def _normalize_user_data(new_attrs: dict) -> dict:
 
 def get_domain(domain_name: str) -> Union[dict, None]:
     with session_scope() as session:
-        domain = Domain.get_by_name(domain_name, session)
+        domain = Domain.get_by_name(domain_name, session).one_or_none()
         if domain:
             return domain.to_dict()
 
@@ -124,29 +125,26 @@ def list_domains() -> List[dict]:
 
 def delete_by_domain_name(domain_name: str) -> None:
     with session_scope() as session:
-        domain = Domain.get_by_name(domain_name, session)
-        if domain:
-            session.delete(domain)
-            session.commit()
+        Domain.get_by_name(domain_name, session).delete()
 
 
 def add_domain(domain_data: dict) -> dict:
     with session_scope() as session:
         domain = Domain(**_normalize_domain_data(domain_data))
         session.add(domain)
-        session.commit()
-        return domain.to_dict()
+
+    return domain.to_dict()
 
 
 def update_domain(domain_data: dict):
     domain_name = domain_data["domain"]
     with session_scope() as session:
-        domain = Domain.get_by_name(domain_name, session)
+        domain = Domain.get_by_name(domain_name, session).one_or_none()
         if domain:
             for k, v in _normalize_domain_data(domain_data).items():
                 setattr(domain, k, v)
                 session.add(domain)
-                session.commit()
+
             return True
 
     return False
@@ -155,7 +153,6 @@ def update_domain(domain_data: dict):
 def add_user(user_data: dict):
     with session_scope() as session:
         session.add(Subscriber(**_normalize_user_data(user_data)))
-        session.commit()
 
 
 def subscribe_user(user_data: dict):
@@ -180,7 +177,6 @@ def unsubscribe_user(chat_id: str):
         if user:
             user.subscribed = False
             session.add(user)
-            session.commit()
             return True
 
     return False
@@ -198,7 +194,6 @@ def update_user_notification_time(chat_id: str) -> bool:
         if user:
             user.last_informed = datetime.datetime.now()
             session.add(user)
-            session.commit()
             return True
 
     return False
